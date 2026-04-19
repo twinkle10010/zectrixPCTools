@@ -2,10 +2,7 @@
 
 一款基于 Neutralinojs 构建的桌面待办事项管理工具，支持云端同步。
 <img width="1611" height="1323" alt="image" src="https://github.com/user-attachments/assets/2594bb0c-bf2f-4c5e-bd6d-1f1a80cf99b5" />
-<img width="741" height="834" alt="image" src="https://github.com/user-attachments/assets/08716b1e-07a6-43a7-bf7b-d85df58784e4" />
-<img width="797" height="818" alt="image" src="https://github.com/user-attachments/assets/045f8594-48bd-46a1-84b8-1d85fe0bbd5e" />
-<img width="525" height="675" alt="image" src="https://github.com/user-attachments/assets/6de81747-f44f-4ef5-937c-ac1da083f127" />
-<img width="525" height="675" alt="image" src="https://github.com/user-attachments/assets/d6f9357d-28ee-4409-9391-37fb845fb7d5" />
+<img width="2031" height="1296" alt="image" src="https://github.com/user-attachments/assets/1a25b2da-0799-4629-a704-5a271a32b30a" />
 
 
 ## 功能特性
