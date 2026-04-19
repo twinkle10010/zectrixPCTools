@@ -137,6 +137,23 @@ cargo build --release
 # 输出: target/release/hotkey-ext.exe
 ```
 
+## 打包注意事项
+
+### 必须先清理再打包
+
+每次执行 `npm run build` 前，**必须先删除 `dist` 目录**：
+
+```bash
+rm -rf dist
+npm run build
+```
+
+原因：`neutralino.config.json` 中 `resourcesPath: "dist"` 会将 `dist` 目录内容打包。如果 `dist` 目录中已存在上一次打包的输出文件，会导致循环引用，使 `resources.neu` 文件体积膨胀（从几十KB变成几百MB）。
+
+### 扩展目录保持精简
+
+`extensions/hotkey/` 目录只保留 `hotkey-ext.exe` 文件即可。源码文件（`Cargo.toml`、`src/`、`target/`）不需要也不应该提交到仓库。
+
 ## 常见问题
 
 ### Q: 构建后 resources.neu 文件过大？
