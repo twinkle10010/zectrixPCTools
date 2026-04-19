@@ -35,6 +35,7 @@ body.window-visible {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.5);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,6 +54,58 @@ body.window-visible {
 .modal-content h2 {
   margin-bottom: 20px;
   font-size: 18px;
+}
+
+/* Setup Modal */
+#setup-modal.modal {
+  background: transparent;
+}
+
+#setup-modal .modal-content {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 16px;
+  padding: 30px;
+}
+
+#setup-modal .modal-content h2 {
+  color: #ffffff;
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+
+#setup-modal .form-group label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+#setup-modal .form-group input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 8px;
+}
+
+#setup-modal .form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+#setup-modal .form-group input:focus {
+  outline: none;
+  border-color: #1976d2;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#setup-modal .btn-primary {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+  border-radius: 8px;
+}
+
+#setup-modal .btn-primary:hover {
+  background: linear-gradient(135deg, #1565c0, #1976d2);
 }
 
 .form-group {

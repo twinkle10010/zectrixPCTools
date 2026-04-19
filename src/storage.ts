@@ -1,6 +1,5 @@
-import { filesystem as nFileSystem, os as nOs, storage as nStorage } from '@neutralinojs/lib';
+import { filesystem as nFileSystem, os as nOs } from '@neutralinojs/lib';
 
-const CONFIG_KEY = 'todo_widget_config';
 const CONFIG_FILE_NAME = 'config.json';
 
 export interface Config {
@@ -14,17 +13,10 @@ function isNeutralinoMode(): boolean {
   return typeof runtime.NL_PORT !== 'undefined' || typeof runtime.NL_TOKEN !== 'undefined';
 }
 
-function getConfigFilePath(): string | null {
-  if (!isNeutralinoMode()) return null;
-  const appPath = (window as any).NL_PATH as string | undefined;
-  if (!appPath) return null;
-  return `${appPath}\\${CONFIG_FILE_NAME}`;
-}
-
-async function getPersistentConfigFilePath(): Promise<string | null> {
+async function getConfigFilePath(): Promise<string | null> {
   if (!isNeutralinoMode()) return null;
   try {
-    const appId = ((window as any).NL_APPID as string | undefined) || 'todo_widget';
+    const appId = ((window as any).NL_APPID as string | undefined) || 'com.zectrix.pctools';
     const dataDir = await nOs.getPath('data');
     const appDir = `${dataDir}\\${appId}`;
     try {
@@ -58,100 +50,32 @@ function parseConfig(raw: string | null): Config | null {
 }
 
 export async function loadConfig(): Promise<Config | null> {
+  if (!isNeutralinoMode()) return null;
+
+  const filePath = await getConfigFilePath();
+  if (!filePath) return null;
+
   try {
-    if (isNeutralinoMode()) {
-      const persistentFilePath = await getPersistentConfigFilePath();
-      if (persistentFilePath) {
-        try {
-          const persistentFileConfig = parseConfig(await nFileSystem.readFile(persistentFilePath));
-          if (persistentFileConfig) return persistentFileConfig;
-        } catch {
-          // Ignore persistent file read failures and fallback to other sources.
-        }
-      }
-
-      try {
-        const storageConfig = parseConfig(await nStorage.getData(CONFIG_KEY));
-        if (storageConfig) return storageConfig;
-      } catch {
-        // Ignore Neutralino storage read failures and fallback to other sources.
-      }
-
-      const filePath = getConfigFilePath();
-      if (filePath) {
-        try {
-          const fileConfig = parseConfig(await nFileSystem.readFile(filePath));
-          if (fileConfig) return fileConfig;
-        } catch {
-          // Ignore file read failures and fallback to localStorage.
-        }
-      }
-    }
-
-    // 在非浏览器环境或 localStorage 不可用时安全返回 null
-    try {
-      if (typeof localStorage !== 'undefined') {
-        return parseConfig(localStorage.getItem(CONFIG_KEY));
-      }
-    } catch {
-      // localStorage 不可用
-    }
+    const content = await nFileSystem.readFile(filePath);
+    return parseConfig(content);
+  } catch {
     return null;
-  } catch (error) {
-    console.error('Failed to load config:', error);
   }
-  return null;
 }
 
 export async function saveConfig(config: Config): Promise<boolean> {
+  if (!isNeutralinoMode()) return false;
+
+  const filePath = await getConfigFilePath();
+  if (!filePath) return false;
+
   try {
     const normalizedConfig: Config = {
       mac_address: config.mac_address.trim(),
       api_key: config.api_key.trim()
     };
-    const data = JSON.stringify(normalizedConfig);
-    let successCount = 0;
-
-    // 尝试保存到 localStorage（仅在浏览器环境中）
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(CONFIG_KEY, data);
-        successCount += 1;
-      }
-    } catch {
-      // Ignore localStorage write failures.
-    }
-
-    if (isNeutralinoMode()) {
-      try {
-        await nStorage.setData(CONFIG_KEY, data);
-        successCount += 1;
-      } catch {
-        // Ignore Neutralino storage write failures.
-      }
-
-      const persistentFilePath = await getPersistentConfigFilePath();
-      if (persistentFilePath) {
-        try {
-          await nFileSystem.writeFile(persistentFilePath, data);
-          successCount += 1;
-        } catch {
-          // Ignore persistent file write failures.
-        }
-      }
-
-      const filePath = getConfigFilePath();
-      if (filePath) {
-        try {
-          await nFileSystem.writeFile(filePath, data);
-          successCount += 1;
-        } catch {
-          // Ignore app directory file write failures.
-        }
-      }
-    }
-
-    return successCount > 0;
+    await nFileSystem.writeFile(filePath, JSON.stringify(normalizedConfig));
+    return true;
   } catch (error) {
     console.error('Failed to save config:', error);
     return false;
