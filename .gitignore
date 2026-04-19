@@ -1,5 +1,7 @@
 node_modules/
 dist/zectrixPCTools/
+dist/assets/
+dist/*.zip
 build/
 extensions/hotkey/target/
 extensions/hotkey/Cargo.lock
