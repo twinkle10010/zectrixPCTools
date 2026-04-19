@@ -8,3 +8,4 @@ neutralinojs-*.zip
 .DS_Store
 Thumbs.db
 *.exe
+.claude/
