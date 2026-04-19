@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Insets","PixelUnit","Position","Size"],"fn":["validate_scale_factor"],"struct":["LogicalInsets","LogicalPosition","LogicalSize","LogicalUnit","PhysicalInsets","PhysicalPosition","PhysicalSize","PhysicalUnit"],"trait":["Pixel"]};

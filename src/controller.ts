@@ -10,6 +10,8 @@ class App {
   private abortController: AbortController | null = null;
   private boundHandleKeydown!: (e: KeyboardEvent) => void;
   private boundHideContextMenu!: () => void;
+  private visibilityCheckInterval: number | null = null;
+  private wasWindowHidden: boolean = true;
 
   private setupModal!: HTMLElement;
   private appContainer!: HTMLElement;
@@ -36,6 +38,10 @@ class App {
   destroy() {
     this.abortController?.abort();
     document.removeEventListener('click', this.boundHideContextMenu);
+    if (this.visibilityCheckInterval !== null) {
+      clearInterval(this.visibilityCheckInterval);
+      this.visibilityCheckInterval = null;
+    }
   }
 
   private hasNeutralinoRuntime(): boolean {
@@ -64,6 +70,9 @@ class App {
         nEvents.on('windowClose', async () => {
           await nWindow.hide();
         });
+
+        // 启动窗口可见性轮询，检测热键扩展直接显示窗口的情况
+        this.startVisibilityPolling();
       } catch (err) {
         console.error('Bootstrap error:', err);
       }
@@ -131,6 +140,15 @@ class App {
 
     document.addEventListener('click', this.boundHideContextMenu);
 
+    // 空白处右键不显示浏览器菜单
+    this.todoList.addEventListener('contextmenu', (e) => {
+      const target = e.target as HTMLElement;
+      // 只有点击空白处（非 todo-item）才阻止
+      if (!target.closest('.todo-item')) {
+        e.preventDefault();
+      }
+    });
+
     void this.setupDragToMove();
   }
 
@@ -191,6 +209,25 @@ class App {
     }
   }
 
+  private startVisibilityPolling() {
+    if (!this.isNeutralinoMode()) return;
+
+    this.visibilityCheckInterval = window.setInterval(async () => {
+      try {
+        const isVisible = await nWindow.isVisible();
+        if (isVisible && this.wasWindowHidden) {
+          // 窗口刚被显示（可能是热键触发的），刷新数据
+          this.wasWindowHidden = false;
+          void this.refreshTodos();
+        } else if (!isVisible) {
+          this.wasWindowHidden = true;
+        }
+      } catch (e) {
+        // 忽略轮询中的错误
+      }
+    }, 500);
+  }
+
   private async checkConfig() {
     if (await isConfigured()) {
       this.config = await loadConfig();
@@ -240,7 +277,7 @@ class App {
     this.abortController?.abort();
     this.abortController = new AbortController();
 
-    this.todoList.innerHTML = '<div class="loading">加载中...</div>';
+    this.todoList.innerHTML = '';
 
     try {
       this.todos = await fetchTodos(this.config);

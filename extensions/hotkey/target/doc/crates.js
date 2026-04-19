@@ -1,2 +1,0 @@
-window.ALL_CRATES = ["crossbeam_utils","dpi","itoa","lazy_static","memchr","once_cell","proc_macro2","quote","serde_core","unicode_ident","unicode_segmentation","winapi","winapi_x86_64_pc_windows_gnu","windows_result","windows_targets","windows_x86_64_gnu","zmij"];
-//{"start":21,"fragment_lengths":[17,6,7,14,9,12,14,8,13,16,23,9,31,17,18,21,7]}
