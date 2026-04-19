@@ -1,0 +1,11 @@
+C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\debug\deps\quote-08b59671c977fbff.d: C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\lib.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\ext.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\format.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\ident_fragment.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\to_tokens.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\runtime.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\spanned.rs
+
+C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\debug\deps\libquote-08b59671c977fbff.rmeta: C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\lib.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\ext.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\format.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\ident_fragment.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\to_tokens.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\runtime.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\spanned.rs
+
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\lib.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\ext.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\format.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\ident_fragment.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\to_tokens.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\runtime.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\quote-1.0.45\src\spanned.rs:

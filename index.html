@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zectrixPCTools</title>
+  <link rel="icon" href="./icon.ico">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="setup-modal" class="modal">
+    <div class="modal-content setup-box">
+      <h2>首次设置</h2>
+      <div class="form-group">
+        <label>MAC 地址</label>
+        <input type="text" id="mac-input" placeholder="例如: AA:BB:CC:DD:EE:FF">
+      </div>
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="password" id="api-key-input" placeholder="请输入 API Key">
+      </div>
+      <button id="save-config-btn" class="btn-primary">保存并进入</button>
+    </div>
+  </div>
+
+  <div id="app" class="app-container hidden">
+    <header class="title-bar" id="drag-header">
+      <div class="title-bar-left">
+        <div class="app-icon">
+          <img src="./icon.png" width="18" height="18" alt="icon">
+        </div>
+        <span class="app-title">zectrixPCTools</span>
+      </div>
+      <div class="title-bar-center"></div>
+      <div class="title-bar-right">
+        <button id="add-btn" class="title-btn add-btn" title="新建待办">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button id="maximize-btn" class="title-btn" title="最大化" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+          </svg>
+        </button>
+        <button id="close-btn" class="title-btn close-btn" title="关闭">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="todo-list" id="todo-list">
+      <div class="loading">加载中...</div>
+    </div>
+
+    <footer class="footer">
+      <span></span>
+    </footer>
+  </div>
+
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content edit-box">
+      <h2 id="edit-title">创建待办</h2>
+      <input type="hidden" id="edit-id">
+      <div class="form-group">
+        <label>标题</label>
+        <input type="text" id="edit-title-input" placeholder="待办内容">
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>日期</label>
+          <input type="date" id="edit-date-input">
+        </div>
+        <div class="form-group half">
+          <label>时间</label>
+          <input type="time" id="edit-time-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>优先级</label>
+        <div class="priority-group">
+          <label class="priority-option"><input type="radio" name="priority" value="0"> 低</label>
+          <label class="priority-option"><input type="radio" name="priority" value="1" checked> 中</label>
+          <label class="priority-option"><input type="radio" name="priority" value="2"> 高</label>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="edit-cancel-btn" class="btn-secondary">取消</button>
+        <button id="edit-save-btn" class="btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="context-menu" class="context-menu hidden">
+    <div class="menu-item danger" data-action="delete">删除</div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

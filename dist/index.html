@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <script src="__neutralino_globals.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zectrixPCTools</title>
+  <link rel="icon" href="/assets/icon-9q7uzrRI.ico">
+  <script type="module" crossorigin src="/assets/index-CtNPHF-b.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-C6GtdCx1.css">
+</head>
+<body>
+  <div id="setup-modal" class="modal">
+    <div class="modal-content setup-box">
+      <h2>首次设置</h2>
+      <div class="form-group">
+        <label>MAC 地址</label>
+        <input type="text" id="mac-input" placeholder="例如: AA:BB:CC:DD:EE:FF">
+      </div>
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="password" id="api-key-input" placeholder="请输入 API Key">
+      </div>
+      <button id="save-config-btn" class="btn-primary">保存并进入</button>
+    </div>
+  </div>
+
+  <div id="app" class="app-container hidden">
+    <header class="title-bar" id="drag-header">
+      <div class="title-bar-left">
+        <div class="app-icon">
+          <img src="data:image/png;base64,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" width="18" height="18" alt="icon">
+        </div>
+        <span class="app-title">zectrixPCTools</span>
+      </div>
+      <div class="title-bar-center"></div>
+      <div class="title-bar-right">
+        <button id="add-btn" class="title-btn add-btn" title="新建待办">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button id="maximize-btn" class="title-btn" title="最大化" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+          </svg>
+        </button>
+        <button id="close-btn" class="title-btn close-btn" title="关闭">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="todo-list" id="todo-list">
+      <div class="loading">加载中...</div>
+    </div>
+
+    <footer class="footer">
+      <span></span>
+    </footer>
+  </div>
+
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content edit-box">
+      <h2 id="edit-title">创建待办</h2>
+      <input type="hidden" id="edit-id">
+      <div class="form-group">
+        <label>标题</label>
+        <input type="text" id="edit-title-input" placeholder="待办内容">
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>日期</label>
+          <input type="date" id="edit-date-input">
+        </div>
+        <div class="form-group half">
+          <label>时间</label>
+          <input type="time" id="edit-time-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>优先级</label>
+        <div class="priority-group">
+          <label class="priority-option"><input type="radio" name="priority" value="0"> 低</label>
+          <label class="priority-option"><input type="radio" name="priority" value="1" checked> 中</label>
+          <label class="priority-option"><input type="radio" name="priority" value="2"> 高</label>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button id="edit-cancel-btn" class="btn-secondary">取消</button>
+        <button id="edit-save-btn" class="btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="context-menu" class="context-menu hidden">
+    <div class="menu-item danger" data-action="delete">删除</div>
+  </div>
+
+</body>
+</html>

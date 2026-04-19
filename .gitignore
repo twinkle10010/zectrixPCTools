@@ -1,0 +1,10 @@
+node_modules/
+dist/zectrixPCTools/
+build/
+extensions/hotkey/target/
+extensions/hotkey/Cargo.lock
+*.log
+neutralinojs-*.zip
+.DS_Store
+Thumbs.db
+*.exe

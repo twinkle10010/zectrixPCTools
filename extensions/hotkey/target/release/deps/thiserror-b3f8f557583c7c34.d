@@ -1,0 +1,14 @@
+C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\deps\thiserror-b3f8f557583c7c34.d: C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\build\thiserror-723a2d84637895be\out/private.rs
+
+C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\deps\libthiserror-b3f8f557583c7c34.rlib: C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\build\thiserror-723a2d84637895be\out/private.rs
+
+C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\deps\libthiserror-b3f8f557583c7c34.rmeta: C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\build\thiserror-723a2d84637895be\out/private.rs
+
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\lib.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\aserror.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\display.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\var.rs:
+C:\Users\34784\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.18\src\private.rs:
+C:\Users\34784\Desktop\zectrixPCTools\extensions\hotkey\target\release\build\thiserror-723a2d84637895be\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\34784\\Desktop\\zectrixPCTools\\extensions\\hotkey\\target\\release\\build\\thiserror-723a2d84637895be\\out

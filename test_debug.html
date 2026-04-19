@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Debug Test</title></head>
+<body>
+<h1>Debug Window</h1>
+<p>Open DevTools (F12) to see console output</p>
+<script>
+async function test() {
+  // 等待 Neutralino 初始化
+  await new Promise(r => setTimeout(r, 1000));
+  
+  const title = await Neutralino.window.getTitle();
+  console.log('Window title:', title);
+  
+  const visible = await Neutralino.window.isVisible();
+  console.log('Window visible:', visible);
+  
+  document.body.innerHTML += '<p>Title: ' + title + '</p>';
+  document.body.innerHTML += '<p>Visible: ' + visible + '</p>';
+  
+  // 检查 NL_PATH
+  console.log('NL_PATH:', window.NL_PATH);
+  document.body.innerHTML += '<p>NL_PATH: ' + window.NL_PATH + '</p>';
+}
+test();
+</script>
+</body>
+</html>
