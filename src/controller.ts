@@ -300,7 +300,8 @@ class App {
     this.todoList.innerHTML = this.todos.map(todo => {
       const priorityClass = todo.priority === 2 ? 'priority-high' :
                              todo.priority === 0 ? 'priority-low' : 'priority-medium';
-      const dueText = todo.dueDate && todo.dueTime ? `${todo.dueDate} ${todo.dueTime}` : '';
+      const dueDateText = todo.dueDate ? todo.dueDate.split('T')[0] : '';
+      const dueText = dueDateText && todo.dueTime ? `${dueDateText} ${todo.dueTime}` : '';
 
       return `
         <div class="todo-item ${priorityClass}" data-id="${todo.id}">
@@ -464,7 +465,9 @@ class App {
     (document.getElementById('edit-title') as HTMLElement).textContent = '编辑待办';
     (document.getElementById('edit-id') as HTMLInputElement).value = String(todo.id);
     (document.getElementById('edit-title-input') as HTMLInputElement).value = todo.title;
-    (document.getElementById('edit-date-input') as HTMLInputElement).value = todo.dueDate || '';
+    // 只提取日期部分，避免时区转换问题
+    const dateValue = todo.dueDate ? todo.dueDate.split('T')[0] : '';
+    (document.getElementById('edit-date-input') as HTMLInputElement).value = dateValue;
     (document.getElementById('edit-time-input') as HTMLInputElement).value = todo.dueTime || '';
 
     const priorityRadio = document.querySelector(`input[name="priority"][value="${todo.priority}"]`) as HTMLInputElement;
@@ -492,7 +495,11 @@ class App {
     const priority = parseInt(priorityRadio.value);
 
     if (!title) {
-      alert('请输入标题');
+      titleInput.classList.add('input-error');
+      titleInput.addEventListener('input', function handler() {
+        titleInput.classList.remove('input-error');
+        titleInput.removeEventListener('input', handler);
+      });
       return;
     }
 

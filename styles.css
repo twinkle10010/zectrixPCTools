@@ -440,3 +440,9 @@ body.window-visible {
   font-size: 14px;
   outline: none;
 }
+
+/* Form Error */
+.input-error {
+  border-color: #f44336 !important;
+  background: #fff !important;
+}
