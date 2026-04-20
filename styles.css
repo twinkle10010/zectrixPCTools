@@ -96,12 +96,35 @@ body.window-visible {
 }
 
 #setup-modal .btn-primary {
-  width: 100%;
-  margin-top: 10px;
   padding: 12px;
   font-size: 16px;
   background: linear-gradient(135deg, #1976d2, #42a5f5);
   border-radius: 8px;
+}
+
+#setup-modal .setup-actions {
+  margin-top: 10px;
+}
+
+#setup-modal .setup-actions .btn-primary,
+#setup-modal .setup-actions .btn-secondary {
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+#setup-modal .setup-actions .btn-primary {
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+}
+
+#setup-modal .setup-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+#setup-modal .setup-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 #setup-modal .btn-primary:hover {
@@ -303,11 +326,19 @@ body.window-visible {
 
 .title-btn.add-btn {
   background: rgba(255, 255, 255, 0.1);
-  margin-right: 8px;
+  margin-right: 4px;
 }
 
 .title-btn.add-btn:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+#settings-btn {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#settings-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .title-btn.close-btn:hover {

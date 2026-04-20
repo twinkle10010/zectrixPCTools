@@ -1,6 +1,7 @@
 import { filesystem as nFileSystem, os as nOs } from '@neutralinojs/lib';
 
 const CONFIG_FILE_NAME = 'config.json';
+const WEB_CONFIG_STORAGE_KEY = 'zectrixPCTools.config';
 
 export interface Config {
   mac_address: string;
@@ -11,6 +12,20 @@ function isNeutralinoMode(): boolean {
   if (typeof window === 'undefined') return false;
   const runtime = window as any;
   return typeof runtime.NL_PORT !== 'undefined' || typeof runtime.NL_TOKEN !== 'undefined';
+}
+
+export function normalizeMacAddress(input: string): string | null {
+  const condensed = input
+    .trim()
+    .replace(/：/g, ':')
+    .replace(/[-:\s]/g, '')
+    .toUpperCase();
+
+  if (!/^[0-9A-F]{12}$/.test(condensed)) {
+    return null;
+  }
+
+  return condensed.match(/.{2}/g)!.join(':');
 }
 
 async function getConfigFilePath(): Promise<string | null> {
@@ -30,19 +45,21 @@ async function getConfigFilePath(): Promise<string | null> {
   }
 }
 
-function parseConfig(raw: string | null): Config | null {
+export function parseConfig(raw: string | null): Config | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;
     if (typeof parsed.mac_address !== 'string' || typeof parsed.api_key !== 'string') {
       return null;
     }
-    if (!parsed.mac_address.trim() || !parsed.api_key.trim()) {
+    const normalizedMacAddress = normalizeMacAddress(parsed.mac_address);
+    const apiKey = parsed.api_key.trim();
+    if (!normalizedMacAddress || !apiKey) {
       return null;
     }
     return {
-      mac_address: parsed.mac_address.trim(),
-      api_key: parsed.api_key.trim()
+      mac_address: normalizedMacAddress,
+      api_key: apiKey
     };
   } catch {
     return null;
@@ -50,34 +67,63 @@ function parseConfig(raw: string | null): Config | null {
 }
 
 export async function loadConfig(): Promise<Config | null> {
-  if (!isNeutralinoMode()) return null;
+  if (isNeutralinoMode()) {
+    const filePath = await getConfigFilePath();
+    if (!filePath) return null;
 
-  const filePath = await getConfigFilePath();
-  if (!filePath) return null;
+    try {
+      const content = await nFileSystem.readFile(filePath);
+      return parseConfig(content);
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   try {
-    const content = await nFileSystem.readFile(filePath);
-    return parseConfig(content);
+    return parseConfig(window.localStorage.getItem(WEB_CONFIG_STORAGE_KEY));
   } catch {
     return null;
   }
 }
 
 export async function saveConfig(config: Config): Promise<boolean> {
-  if (!isNeutralinoMode()) return false;
+  const normalizedMacAddress = normalizeMacAddress(config.mac_address);
+  const apiKey = config.api_key.trim();
+  if (!normalizedMacAddress || !apiKey) {
+    return false;
+  }
 
-  const filePath = await getConfigFilePath();
-  if (!filePath) return false;
+  const normalizedConfig: Config = {
+    mac_address: normalizedMacAddress,
+    api_key: apiKey
+  };
+
+  if (isNeutralinoMode()) {
+    const filePath = await getConfigFilePath();
+    if (!filePath) return false;
+
+    try {
+      await nFileSystem.writeFile(filePath, JSON.stringify(normalizedConfig));
+      return true;
+    } catch (error) {
+      console.error('Failed to save config:', error);
+      return false;
+    }
+  }
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
 
   try {
-    const normalizedConfig: Config = {
-      mac_address: config.mac_address.trim(),
-      api_key: config.api_key.trim()
-    };
-    await nFileSystem.writeFile(filePath, JSON.stringify(normalizedConfig));
+    window.localStorage.setItem(WEB_CONFIG_STORAGE_KEY, JSON.stringify(normalizedConfig));
     return true;
   } catch (error) {
-    console.error('Failed to save config:', error);
+    console.error('Failed to save config in browser storage:', error);
     return false;
   }
 }
