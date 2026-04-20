@@ -1,37 +1,65 @@
-import { loadConfig, saveConfig, isConfigured, Config } from './storage';
-import { fetchTodos, createTodo, updateTodo, completeTodo, deleteTodo, Todo } from './api';
-import { init as initNeutralino, window as nWindow, os as nOs, events as nEvents, app } from '@neutralinojs/lib';
+import {
+  loadConfig,
+  saveConfig,
+  isConfigured,
+  normalizeMacAddress
+} from './storage.ts';
+import type { Config } from './storage.ts';
+import {
+  fetchTodos,
+  createTodo,
+  updateTodo,
+  completeTodo,
+  deleteTodo,
+  isAbortError
+} from './api.ts';
+import type { Todo, TodoMutationPayload } from './api.ts';
+import {
+  init as initNeutralino,
+  window as nWindow,
+  os as nOs,
+  events as nEvents
+} from '@neutralinojs/lib';
 
 class App {
   private config: Config | null = null;
   private todos: Todo[] = [];
   private currentEditId: string | number | null = null;
+  private contextMenuTodoId: string | number | null = null;
   private inlineEditingId: string | number | null = null;
   private abortController: AbortController | null = null;
-  private boundHandleKeydown!: (e: KeyboardEvent) => void;
   private boundHideContextMenu!: () => void;
   private visibilityCheckInterval: number | null = null;
-  private wasWindowHidden: boolean = true;
+  private wasWindowHidden = true;
+  private isSettingsMode = false;
 
   private setupModal!: HTMLElement;
+  private setupTitle!: HTMLElement;
+  private setupSaveBtn!: HTMLButtonElement;
+  private setupCancelBtn!: HTMLButtonElement;
   private appContainer!: HTMLElement;
   private editModal!: HTMLElement;
   private todoList!: HTMLElement;
   private contextMenu!: HTMLElement;
+  private macInput!: HTMLInputElement;
+  private apiKeyInput!: HTMLInputElement;
 
   constructor() {
     if (this.hasNeutralinoRuntime()) {
       initNeutralino();
     }
 
-    // 绑定方法引用以便正确移除事件监听器
     this.boundHideContextMenu = () => this.hideContextMenu();
 
     this.initElements();
     this.bindEvents();
+
+    if (!this.hasNeutralinoRuntime()) {
+      document.body.classList.add('window-visible');
+    }
+
     void this.bootstrap();
 
-    // 页面卸载时清理资源
     window.addEventListener('beforeunload', () => this.destroy());
   }
 
@@ -57,21 +85,16 @@ class App {
   private async bootstrap() {
     if (this.isNeutralinoMode()) {
       try {
-        // 启动热键扩展（托盘和全局热键）
-        this.initExtension();
+        void this.initExtension();
 
-        // 先显示窗口再居中，避免闪烁
         await nWindow.show();
         await nWindow.center();
-        // 居中完成后显示 body
         document.body.classList.add('window-visible');
 
-        // 监听窗口关闭事件，隐藏到托盘而不是退出
         nEvents.on('windowClose', async () => {
           await nWindow.hide();
         });
 
-        // 启动窗口可见性轮询，检测热键扩展直接显示窗口的情况
         this.startVisibilityPolling();
       } catch (err) {
         console.error('Bootstrap error:', err);
@@ -87,14 +110,13 @@ class App {
       const nlPort = (window as any).NL_PORT as number;
       const nlToken = (window as any).NL_TOKEN as string;
 
-      const extPath = nlPath.replace(/\\/g, '/') + '/extensions/hotkey/hotkey-ext.exe';
-      console.log('Starting hotkey extension:', extPath);
-      console.log('With port:', nlPort, 'token:', nlToken ? nlToken.substring(0, 10) : 'none');
+      const normalizedPath = nlPath.replace(/\\/g, '/');
+      const extPath = `${normalizedPath}/extensions/hotkey/hotkey-ext.exe`;
+      const quotedCommand = `"${extPath}" "${nlPort}" "${nlToken.replace(/"/g, '\\"')}"`;
 
-      // 传递 port 和 token 给扩展
-      await nOs.spawnProcess(extPath, {
-        args: [String(nlPort), nlToken],
-        cwd: nlPath.replace(/\\/g, '/') + '/extensions/hotkey'
+      console.log('Starting hotkey extension:', extPath);
+      await nOs.spawnProcess(quotedCommand, {
+        cwd: `${normalizedPath}/extensions/hotkey`
       });
       console.log('Hotkey extension started');
     } catch (err) {
@@ -102,20 +124,23 @@ class App {
     }
   }
 
-  private async initTray() {
-    // 托盘功能已禁用
-  }
-
   private initElements() {
     this.setupModal = document.getElementById('setup-modal')!;
+    this.setupTitle = document.getElementById('setup-title')!;
+    this.setupSaveBtn = document.getElementById('save-config-btn') as HTMLButtonElement;
+    this.setupCancelBtn = document.getElementById('setup-cancel-btn') as HTMLButtonElement;
     this.appContainer = document.getElementById('app')!;
     this.editModal = document.getElementById('edit-modal')!;
     this.todoList = document.getElementById('todo-list')!;
     this.contextMenu = document.getElementById('context-menu')!;
+    this.macInput = document.getElementById('mac-input') as HTMLInputElement;
+    this.apiKeyInput = document.getElementById('api-key-input') as HTMLInputElement;
   }
 
   private bindEvents() {
-    document.getElementById('save-config-btn')!.addEventListener('click', () => void this.saveConfig());
+    this.setupSaveBtn.addEventListener('click', () => void this.saveConfig());
+    this.setupCancelBtn.addEventListener('click', () => this.hideSetupModal());
+    document.getElementById('settings-btn')!.addEventListener('click', () => this.openSettingsDialog());
     document.getElementById('add-btn')!.addEventListener('click', () => this.showCreateDialog());
     document.getElementById('edit-cancel-btn')!.addEventListener('click', () => this.hideEditDialog());
     document.getElementById('edit-save-btn')!.addEventListener('click', () => void this.saveEdit());
@@ -123,9 +148,12 @@ class App {
     document.getElementById('maximize-btn')!.addEventListener('click', () => this.handleMaximize());
     document.getElementById('close-btn')!.addEventListener('click', () => this.handleClose());
 
+    this.macInput.addEventListener('blur', () => this.formatMacInputValue());
+    this.macInput.addEventListener('input', () => this.macInput.classList.remove('input-error'));
+    this.apiKeyInput.addEventListener('input', () => this.apiKeyInput.classList.remove('input-error'));
+
     this.todoList.addEventListener('dblclick', (e) => {
       const target = e.target as HTMLElement;
-      // 只有点击空白处（非 todo-item）才触发
       if (!target.closest('.todo-item')) {
         this.showCreateDialog();
       }
@@ -140,10 +168,8 @@ class App {
 
     document.addEventListener('click', this.boundHideContextMenu);
 
-    // 空白处右键不显示浏览器菜单
     this.todoList.addEventListener('contextmenu', (e) => {
       const target = e.target as HTMLElement;
-      // 只有点击空白处（非 todo-item）才阻止
       if (!target.closest('.todo-item')) {
         e.preventDefault();
       }
@@ -159,7 +185,7 @@ class App {
     if (!dragArea) return;
     try {
       await nWindow.setDraggableRegion(dragArea, {
-        exclude: ['add-btn', 'maximize-btn', 'close-btn']
+        exclude: ['add-btn', 'settings-btn', 'maximize-btn', 'close-btn']
       });
     } catch (err) {
       console.error('Setup draggable region failed:', err);
@@ -189,26 +215,6 @@ class App {
     }
   }
 
-  private async toggleWindow() {
-    if (!this.isNeutralinoMode()) return;
-
-    try {
-      // 直接切换：隐藏就显示，显示就隐藏
-      const visible = await nWindow.isVisible();
-      if (visible) {
-        await nWindow.hide();
-      } else {
-        await nWindow.show();
-        await nWindow.center();
-        await nWindow.focus();
-        document.body.classList.add('window-visible');
-        void this.refreshTodos();
-      }
-    } catch (e: any) {
-      console.error('窗口切换失败:', e?.message || e);
-    }
-  }
-
   private startVisibilityPolling() {
     if (!this.isNeutralinoMode()) return;
 
@@ -216,14 +222,13 @@ class App {
       try {
         const isVisible = await nWindow.isVisible();
         if (isVisible && this.wasWindowHidden) {
-          // 窗口刚被显示（可能是热键触发的），刷新数据
           this.wasWindowHidden = false;
           void this.refreshTodos();
         } else if (!isVisible) {
           this.wasWindowHidden = true;
         }
-      } catch (e) {
-        // 忽略轮询中的错误
+      } catch {
+        // Ignore polling errors.
       }
     }, 500);
   }
@@ -234,36 +239,81 @@ class App {
       this.showMainApp();
       void this.refreshTodos();
     } else {
-      this.showSetupModal();
+      this.showSetupModal('initial');
     }
   }
 
-  private showSetupModal() {
+  private populateConfigInputs(config: Config | null) {
+    this.macInput.value = config?.mac_address ?? '';
+    this.apiKeyInput.value = config?.api_key ?? '';
+    this.macInput.classList.remove('input-error');
+    this.apiKeyInput.classList.remove('input-error');
+  }
+
+  private showSetupModal(mode: 'initial' | 'settings') {
+    this.isSettingsMode = mode === 'settings';
+    this.setupTitle.textContent = this.isSettingsMode ? '设置' : '首次设置';
+    this.setupSaveBtn.textContent = this.isSettingsMode ? '保存设置' : '保存并进入';
+    this.setupCancelBtn.classList.toggle('hidden', !this.isSettingsMode);
+    this.populateConfigInputs(this.isSettingsMode ? this.config : null);
     this.setupModal.classList.remove('hidden');
-    this.appContainer.classList.add('hidden');
+
+    if (!this.isSettingsMode) {
+      this.appContainer.classList.add('hidden');
+    }
+  }
+
+  private hideSetupModal() {
+    this.setupModal.classList.add('hidden');
+    this.isSettingsMode = false;
+  }
+
+  private openSettingsDialog() {
+    this.showSetupModal('settings');
   }
 
   private showMainApp() {
-    this.setupModal.classList.add('hidden');
+    this.hideSetupModal();
     this.appContainer.classList.remove('hidden');
   }
 
+  private formatMacInputValue() {
+    const normalized = normalizeMacAddress(this.macInput.value);
+    if (normalized) {
+      this.macInput.value = normalized;
+      this.macInput.classList.remove('input-error');
+    }
+  }
+
+  private markInputError(input: HTMLInputElement) {
+    input.classList.add('input-error');
+  }
+
   private async saveConfig() {
-    const macInput = document.getElementById('mac-input') as HTMLInputElement;
-    const apiKeyInput = document.getElementById('api-key-input') as HTMLInputElement;
+    const normalizedMacAddress = normalizeMacAddress(this.macInput.value);
+    const apiKey = this.apiKeyInput.value.trim();
 
-    const mac = macInput.value.trim();
-    const apiKey = apiKeyInput.value.trim();
-
-    if (!mac || !apiKey) {
-      alert('请填写所有字段');
+    if (!normalizedMacAddress) {
+      this.markInputError(this.macInput);
+      alert('MAC 地址格式无效，请输入 12 位十六进制字符，保存后会自动规范为 AA:BB:CC:DD:EE:FF');
       return;
     }
 
-    const config: Config = { mac_address: mac, api_key: apiKey };
+    if (!apiKey) {
+      this.markInputError(this.apiKeyInput);
+      alert('请输入 API Key');
+      return;
+    }
+
+    this.macInput.value = normalizedMacAddress;
+    const config: Config = { mac_address: normalizedMacAddress, api_key: apiKey };
     if (await saveConfig(config)) {
       this.config = config;
-      this.showMainApp();
+      if (this.isSettingsMode) {
+        this.hideSetupModal();
+      } else {
+        this.showMainApp();
+      }
       void this.refreshTodos();
     } else {
       alert('保存配置失败');
@@ -273,20 +323,19 @@ class App {
   async refreshTodos() {
     if (!this.config) return;
 
-    // 取消之前的请求
     this.abortController?.abort();
-    this.abortController = new AbortController();
+    const requestController = new AbortController();
+    this.abortController = requestController;
 
-    this.todoList.innerHTML = '';
+    this.todoList.innerHTML = '<div class="loading">加载中...</div>';
 
     try {
-      this.todos = await fetchTodos(this.config);
-      // 检查是否已被取消
-      if (this.abortController.signal.aborted) return;
+      const todos = await fetchTodos(this.config, { signal: requestController.signal });
+      if (this.abortController !== requestController || requestController.signal.aborted) return;
+      this.todos = todos;
       this.renderTodos();
     } catch (e: any) {
-      // 检查是否已被取消
-      if (this.abortController?.signal.aborted) return;
+      if (this.abortController !== requestController || isAbortError(e)) return;
       this.todoList.innerHTML = `<div class="empty">加载失败: ${e.message}</div>`;
     }
   }
@@ -299,7 +348,7 @@ class App {
 
     this.todoList.innerHTML = this.todos.map(todo => {
       const priorityClass = todo.priority === 2 ? 'priority-high' :
-                             todo.priority === 0 ? 'priority-low' : 'priority-medium';
+        todo.priority === 0 ? 'priority-low' : 'priority-medium';
       const dueDateText = todo.dueDate ? todo.dueDate.split('T')[0] : '';
       const dueText = dueDateText && todo.dueTime ? `${dueDateText} ${todo.dueTime}` : '';
 
@@ -325,7 +374,7 @@ class App {
 
       checkbox?.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.handleCompleteById(id);
+        void this.handleCompleteById(id);
       });
 
       title?.addEventListener('dblclick', (e) => {
@@ -348,7 +397,7 @@ class App {
   }
 
   private showContextMenu(x: number, y: number, id: string | number) {
-    this.currentEditId = id;
+    this.contextMenuTodoId = id;
     this.contextMenu.style.left = `${x}px`;
     this.contextMenu.style.top = `${y}px`;
     this.contextMenu.classList.remove('hidden');
@@ -356,13 +405,19 @@ class App {
 
   private hideContextMenu() {
     this.contextMenu.classList.add('hidden');
-    this.currentEditId = null;
+    this.contextMenuTodoId = null;
   }
 
   private handleContextAction(action: string) {
-    if (this.currentEditId === null) return;
+    if (this.contextMenuTodoId === null) return;
+    if (action === 'edit') {
+      const todo = this.todos.find(item => String(item.id) === String(this.contextMenuTodoId));
+      if (todo) {
+        this.showEditDialog(todo);
+      }
+    }
     if (action === 'delete') {
-      this.handleDelete();
+      void this.handleDelete();
     }
     this.hideContextMenu();
   }
@@ -413,7 +468,12 @@ class App {
       }
 
       try {
-        await updateTodo(this.config, todo.id, newTitle);
+        await updateTodo(this.config, todo.id, {
+          title: newTitle,
+          dueDate: todo.dueDate ? todo.dueDate.split('T')[0] : '',
+          dueTime: todo.dueTime || '',
+          priority: todo.priority
+        });
         this.inlineEditingId = null;
         await this.refreshTodos();
       } catch (e: any) {
@@ -423,8 +483,7 @@ class App {
     };
 
     input.addEventListener('blur', () => {
-      // 使用 setTimeout 避免与 Enter 键的竞态
-      setTimeout(() => save(), 0);
+      setTimeout(() => void save(), 0);
     });
     input.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -465,13 +524,15 @@ class App {
     (document.getElementById('edit-title') as HTMLElement).textContent = '编辑待办';
     (document.getElementById('edit-id') as HTMLInputElement).value = String(todo.id);
     (document.getElementById('edit-title-input') as HTMLInputElement).value = todo.title;
-    // 只提取日期部分，避免时区转换问题
-    const dateValue = todo.dueDate ? todo.dueDate.split('T')[0] : '';
-    (document.getElementById('edit-date-input') as HTMLInputElement).value = dateValue;
+    (document.getElementById('edit-date-input') as HTMLInputElement).value = todo.dueDate
+      ? todo.dueDate.split('T')[0]
+      : '';
     (document.getElementById('edit-time-input') as HTMLInputElement).value = todo.dueTime || '';
 
-    const priorityRadio = document.querySelector(`input[name="priority"][value="${todo.priority}"]`) as HTMLInputElement;
-    if (priorityRadio) priorityRadio.checked = true;
+    const priorityRadio = document.querySelector(`input[name="priority"][value="${todo.priority}"]`) as HTMLInputElement | null;
+    if (priorityRadio) {
+      priorityRadio.checked = true;
+    }
 
     this.editModal.classList.remove('hidden');
   }
@@ -492,7 +553,13 @@ class App {
     const title = titleInput.value.trim();
     const dueDate = dateInput.value;
     const dueTime = timeInput.value;
-    const priority = parseInt(priorityRadio.value);
+    const priority = parseInt(priorityRadio.value, 10);
+    const payload: TodoMutationPayload = {
+      title,
+      dueDate,
+      dueTime,
+      priority
+    };
 
     if (!title) {
       titleInput.classList.add('input-error');
@@ -505,9 +572,9 @@ class App {
 
     try {
       if (this.currentEditId !== null) {
-        await updateTodo(this.config, this.currentEditId, title);
+        await updateTodo(this.config, this.currentEditId, payload);
       } else {
-        await createTodo(this.config, title, dueDate, dueTime, priority);
+        await createTodo(this.config, payload);
       }
       this.hideEditDialog();
       await this.refreshTodos();
