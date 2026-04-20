@@ -115,7 +115,6 @@ dist\zectrixPCTools\zectrixPCTools-win_x64.exe
 ### 编辑待办
 
 - **快速编辑**：双击待办标题直接修改
-- **完整编辑**：通过设置弹窗修改（功能预留）
 
 ### 完成/删除待办
 

@@ -43,6 +43,7 @@ class App {
   private contextMenu!: HTMLElement;
   private macInput!: HTMLInputElement;
   private apiKeyInput!: HTMLInputElement;
+  private filterFutureInput!: HTMLInputElement;
 
   constructor() {
     if (this.hasNeutralinoRuntime()) {
@@ -135,6 +136,7 @@ class App {
     this.contextMenu = document.getElementById('context-menu')!;
     this.macInput = document.getElementById('mac-input') as HTMLInputElement;
     this.apiKeyInput = document.getElementById('api-key-input') as HTMLInputElement;
+    this.filterFutureInput = document.getElementById('filter-future-input') as HTMLInputElement;
   }
 
   private bindEvents() {
@@ -246,6 +248,7 @@ class App {
   private populateConfigInputs(config: Config | null) {
     this.macInput.value = config?.mac_address ?? '';
     this.apiKeyInput.value = config?.api_key ?? '';
+    this.filterFutureInput.checked = config?.filter_future ?? false;
     this.macInput.classList.remove('input-error');
     this.apiKeyInput.classList.remove('input-error');
   }
@@ -306,7 +309,11 @@ class App {
     }
 
     this.macInput.value = normalizedMacAddress;
-    const config: Config = { mac_address: normalizedMacAddress, api_key: apiKey };
+    const config: Config = {
+      mac_address: normalizedMacAddress,
+      api_key: apiKey,
+      filter_future: this.filterFutureInput.checked
+    };
     if (await saveConfig(config)) {
       this.config = config;
       if (this.isSettingsMode) {
@@ -327,7 +334,7 @@ class App {
     const requestController = new AbortController();
     this.abortController = requestController;
 
-    this.todoList.innerHTML = '<div class="loading">加载中...</div>';
+    this.todoList.innerHTML = '';
 
     try {
       const todos = await fetchTodos(this.config, { signal: requestController.signal });
@@ -341,12 +348,27 @@ class App {
   }
 
   private renderTodos() {
-    if (this.todos.length === 0) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+
+    const filtered = this.config?.filter_future
+      ? this.todos.filter(todo => {
+          if (!todo.dueDate) return true;
+          const due = new Date(todo.dueDate + 'T00:00:00');
+          return due >= today && due < dayAfterTomorrow;
+        })
+      : this.todos;
+
+    if (filtered.length === 0) {
       this.todoList.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>暂无待办事项</div>';
       return;
     }
 
-    this.todoList.innerHTML = this.todos.map(todo => {
+    this.todoList.innerHTML = filtered.map(todo => {
       const priorityClass = todo.priority === 2 ? 'priority-high' :
         todo.priority === 0 ? 'priority-low' : 'priority-medium';
       const dueDateText = todo.dueDate ? todo.dueDate.split('T')[0] : '';
@@ -417,7 +439,7 @@ class App {
       }
     }
     if (action === 'delete') {
-      void this.handleDelete();
+      void this.handleDelete(this.contextMenuTodoId);
     }
     this.hideContextMenu();
   }
@@ -583,11 +605,12 @@ class App {
     }
   }
 
-  private async handleDelete() {
-    if (!this.config || this.currentEditId === null) return;
+  private async handleDelete(id?: string | number | null) {
+    const targetId = id ?? this.currentEditId;
+    if (!this.config || targetId === null) return;
 
     try {
-      await deleteTodo(this.config, this.currentEditId);
+      await deleteTodo(this.config, targetId);
       await this.refreshTodos();
     } catch (e: any) {
       alert(`删除失败: ${e.message}`);

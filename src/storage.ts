@@ -6,6 +6,7 @@ const WEB_CONFIG_STORAGE_KEY = 'zectrixPCTools.config';
 export interface Config {
   mac_address: string;
   api_key: string;
+  filter_future: boolean;
 }
 
 function isNeutralinoMode(): boolean {
@@ -59,7 +60,8 @@ export function parseConfig(raw: string | null): Config | null {
     }
     return {
       mac_address: normalizedMacAddress,
-      api_key: apiKey
+      api_key: apiKey,
+      filter_future: !!parsed.filter_future
     };
   } catch {
     return null;
@@ -99,7 +101,8 @@ export async function saveConfig(config: Config): Promise<boolean> {
 
   const normalizedConfig: Config = {
     mac_address: normalizedMacAddress,
-    api_key: apiKey
+    api_key: apiKey,
+    filter_future: config.filter_future
   };
 
   if (isNeutralinoMode()) {

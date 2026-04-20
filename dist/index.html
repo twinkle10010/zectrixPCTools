@@ -7,22 +7,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>zectrixPCTools</title>
   <link rel="icon" href="/assets/icon-9q7uzrRI.ico">
-  <script type="module" crossorigin src="/assets/index-hMGLDr4P.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CfGxbVDU.css">
+  <script type="module" crossorigin src="/assets/index-9lCAqk-P.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CV1BucgE.css">
 </head>
 <body>
-  <div id="setup-modal" class="modal">
+  <div id="setup-modal" class="modal hidden">
     <div class="modal-content setup-box">
-      <h2>首次设置</h2>
+      <h2 id="setup-title">首次设置</h2>
       <div class="form-group">
         <label>MAC 地址</label>
-        <input type="text" id="mac-input" placeholder="例如: AA:BB:CC:DD:EE:FF">
+        <input type="text" id="mac-input" placeholder="例如: AA:BB:CC:DD:EE:FF / aabbccddeeff" autocomplete="off">
       </div>
       <div class="form-group">
         <label>API Key</label>
         <input type="password" id="api-key-input" placeholder="请输入 API Key">
       </div>
-      <button id="save-config-btn" class="btn-primary">保存并进入</button>
+      <div class="form-group toggle-group">
+        <label>仅显示今天和明天的待办</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="filter-future-input">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="btn-group setup-actions">
+        <button id="setup-cancel-btn" class="btn-secondary hidden">取消</button>
+        <button id="save-config-btn" class="btn-primary">保存并进入</button>
+      </div>
     </div>
   </div>
 
@@ -40,6 +50,12 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button id="settings-btn" class="title-btn" title="设置">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3.2"></circle>
+            <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.2 1.2 0 0 1 0 1.7l-1.6 1.6a1.2 1.2 0 0 1-1.7 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.2 1.2 0 0 1-1.2 1.2h-2.2A1.2 1.2 0 0 1 10 20v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.2 1.2 0 0 1-1.7 0l-1.6-1.6a1.2 1.2 0 0 1 0-1.7l.1-.1A1 1 0 0 0 5 15a1 1 0 0 0-.9-.6H4a1.2 1.2 0 0 1-1.2-1.2v-2.2A1.2 1.2 0 0 1 4 9.8h.2A1 1 0 0 0 5 9.2a1 1 0 0 0-.2-1.1l-.1-.1a1.2 1.2 0 0 1 0-1.7l1.6-1.6a1.2 1.2 0 0 1 1.7 0l.1.1a1 1 0 0 0 1.1.2h.1A1 1 0 0 0 10 4V3.8A1.2 1.2 0 0 1 11.2 2.6h2.2A1.2 1.2 0 0 1 14.6 3.8V4a1 1 0 0 0 .6.9h.1a1 1 0 0 0 1.1-.2l.1-.1a1.2 1.2 0 0 1 1.7 0l1.6 1.6a1.2 1.2 0 0 1 0 1.7l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6h.2A1.2 1.2 0 0 1 21.2 11v2.2a1.2 1.2 0 0 1-1.2 1.2h-.2a1 1 0 0 0-.9.6z"></path>
           </svg>
         </button>
         <button id="maximize-btn" class="title-btn" title="最大化" style="display:none;">
@@ -71,7 +87,7 @@
       <input type="hidden" id="edit-id">
       <div class="form-group">
         <label>标题</label>
-        <input type="text" id="edit-title-input" placeholder="待办内容">
+        <input type="text" id="edit-title-input" placeholder="待办内容" autocomplete="off">
       </div>
       <div class="form-row">
         <div class="form-group half">
@@ -99,6 +115,7 @@
   </div>
 
   <div id="context-menu" class="context-menu hidden">
+    <div class="menu-item" data-action="edit">编辑</div>
     <div class="menu-item danger" data-action="delete">删除</div>
   </div>
 
